@@ -1,0 +1,178 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+template <class T>
+class Queue{
+    int first,last,noe,size;
+	T *store;
+	
+public:
+	Queue(int s):size(s),first(0),last(0),noe(0),store(new T[size]){}
+	bool isEmpty(){
+		if(noe==0)
+			return 1;
+		return 0;
+	}	
+	void enqueue(T data){
+		store[last]=data;
+		noe++;
+		last = (last+1)%size;
+	}
+	T dequeue(){
+		T temp;
+		if(!isEmpty()){
+			temp = store[first];
+			noe--;
+			first = (first+1)%size;
+		}
+		return temp;
+	}
+};
+
+class Node{
+private:
+	Node *right;
+	Node *left;
+	string data;
+public:
+	Node(string d):data(d),right(NULL),left(NULL){}
+	string getData(){
+		return data;
+	}
+	Node* getRight(){
+		return right;
+	}
+	void setRight(Node *r){
+		right = r;
+	}
+	Node* getLeft(){
+		return left;
+	}
+	void setLeft(Node *r){
+		left = r;
+	}
+
+};
+
+class Tree{
+Node *root;
+string *arr;
+int count,i;
+public:
+	Tree():root(NULL){}
+
+	Node* BFS(string data){
+		Queue<Node*> queue(100);
+		if(root!=NULL){
+		queue.enqueue(root);
+		while(!queue.isEmpty()){
+			Node* temp = queue.dequeue();
+			if(temp->getData()==data){
+			    //cout<<temp->getData();
+				return temp;
+			}
+			if(temp->getLeft()!=NULL)
+				queue.enqueue(temp->getLeft());
+			if(temp->getRight()!=NULL)
+				queue.enqueue(temp->getRight());
+			
+		}}
+	}
+	
+	void insert(string parent, string left, string right){
+		Node *newLeft = new Node(left);
+		Node *newRight = new Node(right);
+		
+		if(root==NULL){
+			Node *parentNode = new Node(parent);
+			root = parentNode;
+			if(right != "--")
+				parentNode->setRight(newRight);
+			if(left != "--")
+				parentNode->setLeft(newLeft);
+		}else{
+		    Node* parentNode = BFS(parent);
+			if(right != "--")
+				parentNode->setRight(newRight);
+			if(left != "--")
+				parentNode->setLeft(newLeft);
+		}
+	}
+	void preorder(Node *r){
+		if(r!=NULL){
+			//cout<<r->getData()<<" ";
+			arr[i] = r->getData();
+			i++;
+			preorder(r->getLeft()); 
+			preorder(r->getRight());
+		}
+	}
+	void preorder(){
+		inorder();
+		arr = new string[count];
+		i=0;
+		preorder(root);
+	}
+	void inorder(Node *r){
+		if(r!=NULL){
+			inorder(r->getLeft()); 
+			count++;
+			inorder(r->getRight());
+		}
+	}
+	void inorder(){
+		count = 0;
+		//cout<<"from inordercall";
+		inorder(root);
+	}
+	void findSuccessor(string data){
+		Node *parent = BFS(data);
+		if(parent->getLeft()!=NULL)
+			cout<<parent->getLeft()->getData()<<endl;
+		else if(parent->getRight()!=NULL)
+			cout<<parent->getRight()->getData()<<endl;
+		else{
+			preorder();
+			for(int i = 0;i<count;i++){
+			    //cout<<arr[i]<<" ";
+				if(arr[i] == data){
+				    cout<<arr[i+1]<<endl;
+				    break;
+				}
+			}
+			//cout<<"sdf";
+			
+		}
+	}
+	
+	
+};
+int main(){
+	Tree tree;
+	int n,m;
+	string p,l,r;
+	cin>>n;
+	for(int i = 0;i<n;i++){
+	        cin>>p>>l>>r;
+	       tree.insert(p,l,r);
+	}
+	cin>>m;
+	string *arr = new string[m];
+	for(int i=0;i<m;i++){
+	    cin>>arr[i];
+	}
+	for(int i=0;i<m;i++){
+	        tree.findSuccessor(arr[i]);
+	}
+// 	tree.insert("viru","mukesh","sunil");
+// 	tree.insert("mukesh","gagan","disha");
+// 	tree.insert("sunil","--","kamol");
+// 	tree.findSuccessor("viru");
+// 	tree.findSuccessor("disha");
+// 	tree.findSuccessor("sunil");
+// 	tree.findSuccessor("gagan");
+//	tree.preorder();
+	
+return 0;
+}.
