@@ -1,0 +1,356 @@
+#include <iostream>
+#include <string.h>
+#include "stack.cpp"
+#include "queue.cpp"
+
+using namespace std;
+
+class Node{
+
+	private:
+		int data;
+		Node *left;
+		Node *right;
+	public:
+		Node(){}
+
+		Node(int data){
+			this->data = data;
+			this->left = NULL;
+			this->right = NULL;
+		}
+
+		~Node(){
+			delete left;
+			delete right;
+		}
+
+		void setData(int data){
+			this->data = data;
+		}
+
+		int getData(){
+			return this->data;
+		}
+
+		void setLeft(Node* left){
+			this->left = left;
+		}
+
+		void setRight(Node* right){
+			this->right = right;
+		}
+
+		Node* getLeft(){
+			return left;
+		}
+
+		Node* getRight(){
+			return right;
+		}
+
+		void print(){
+			cout<<data<<"->";
+		}
+
+};
+
+class BST{
+
+	private:
+		Node *root;
+	public:
+		BST(){
+			root = NULL;
+		}
+
+		~BST(){
+	
+		}
+		
+		void insert(int data){
+
+			Node *newnode = new Node(data);
+
+			if( root == NULL){
+				root = newnode;
+			}else{
+				Node *temp = root;
+				Node *prev = NULL;
+				while( temp != NULL ){
+					prev = temp;
+					if( data > temp->getData() ){
+						temp = temp->getRight();
+					}else{
+						temp = temp->getLeft();
+					}
+				}
+				if( data > prev->getData() ){
+					prev->setRight( newnode );
+				}else{
+					prev->setLeft( newnode );
+				}
+			}
+		}
+
+		void traversalB(){
+
+			Queue<Node*> store(100);
+			store.enqueue( root );
+					
+			while( ! store.isEmpty() ){
+				Node *node = store.dequeue();
+				node->print();
+				if( node->getRight() != NULL){
+					store.enqueue( node->getRight() );
+				}
+				if( node->getLeft() != NULL){
+					store.enqueue( node->getLeft() );
+				}
+			}
+			cout<<endl;	
+		}
+
+		void traversalD(){
+
+			Stack<Node*> store(100);
+			store.push( root );
+					
+			while( ! store.isEmpty() ){
+				Node *node = store.pop();
+				node->print();
+				if( node->getRight() != NULL){
+					store.push( node->getRight() );
+				}
+				if( node->getLeft() != NULL){
+					store.push( node->getLeft() );
+				}
+			}
+			cout<<endl;	
+		}
+		
+		void inorder(Node *root){
+			if( root != NULL){
+				inorder( root->getLeft() );
+				root->print();
+				inorder( root->getRight() );
+
+			}	
+		}
+			
+		void inorder(){
+			inorder( root );
+			cout<<endl;
+		}
+		
+		Node *find(Node *root, int data){
+			Node *temp = root;
+			while( temp != NULL && temp->getData() != data ){
+				if( data > temp->getData() )
+					temp = temp->getRight();
+				else
+					temp = temp->getLeft();
+			}
+		return temp;
+		}
+
+		void delete(int data){
+			Node *node = find(root, data );
+			if( node->getLeft() == NULL && node->getRight() == NULL)
+				root = deleteNoChild(root, node );
+			else if( node->getLeft() != NULL && node->getRight() == NULL )
+				root = deleteOneChild(root, node );
+			else if( node->getLeft() == NULL && node->getRight() != NULL )
+				root = deleteOneChild(root, node );
+			else
+				root = deleteTwoChild(root, node );
+		}
+
+		Node* deleteNoChild(Node *root, Node *node){
+			if( root == node ){
+			    root = NULL;	
+			}else{
+			        Node* parent = findParent( node );	
+				if( parent->getLeft() != NULL )
+					parent->setLeft( NULL );
+				else	
+					parent->setRight( NULL );
+			}
+		return root;
+		}
+
+
+		/*
+
+		Node* search(Node *root, int data){
+			Node* temp = root;
+			while( temp != NULL){
+				if( temp->getData() == data){
+					return temp;
+				}
+				else if ( data > temp->getData() ){
+					temp = temp->getRight();
+				}else{
+					temp = temp->getLeft();
+				}		
+			}
+		return NULL;
+		}
+
+		Node* searchParent(Node *root, int data){
+			Node* parent = NULL;
+			Node* temp = root;
+			while( temp != NULL && temp->getData() != data ){
+				parent = temp;		
+				if ( data > temp->getData() ){
+					temp = temp->getRight();
+				}else{
+					temp = temp->getLeft();
+				}		
+			}
+		return parent;
+		}
+
+		Node* deleteZeroChild(Node *root, Node *child, Node *parent){
+			
+			cout<<"Zero Child"<<parent<<" "<<child<< endl;
+			
+			if( parent == NULL && child != NULL){
+				delete root;
+				root = NULL;
+			}
+			else{
+				if( child->getData() > parent->getData() ){
+					 parent->setRight(NULL);
+					 delete child;
+				}else{
+					 parent->setLeft(NULL);
+					 delete child;
+				}
+			}
+		return root;
+		} 
+		
+		Node* deleteOneChild(Node *root, Node *child, Node *parent){
+
+			cout<<"One Child"<<endl;
+
+			Node *subchild = NULL;
+
+			if( child->getLeft() != NULL)
+				subchild = child->getLeft();
+			else
+				subchild = child->getRight();
+			
+			if( parent == NULL && child != NULL ){
+				root = subchild;
+				child = NULL;
+			}else{
+				
+				if( child->getData() > parent->getData() ){
+					parent->setRight( subchild );
+				}else{
+					parent->setLeft( subchild );
+				}			
+			}
+		return root;
+		}
+
+		Node* getLeftKaRightmost(Node* substree){
+			while( substree->getRight() != NULL)
+				substree = substree->getRight();
+		return substree;
+		}
+
+		Node* deleteTwoChildChild(Node *root, Node* child){
+
+			cout<<"Two Child"<<endl;
+			Node *rightmost = getLeftKaRightmost(child->getLeft());	
+			int data = child->getData();
+			child->setData( rightmost->getData() );
+			rightmost->setData( data );
+			Node *temp =  deleteNode( child->getLeft(), data );
+			child->setLeft( temp );
+
+		return root;
+		}
+
+		
+
+		void deleteNode(int data){
+			root = deleteNode( root, data);
+		}
+		
+		Node* deleteNode(Node *root, int data){
+
+			Node* parent = searchParent( root, data );
+			Node* child = NULL;
+
+			if( parent != NULL ){
+				if( data > parent->getData() ){
+					child = parent->getRight();
+				}else{
+					child = parent->getLeft();
+				}
+			}else{
+				child = search( root, data );
+			}
+
+			cout<<parent<<" "<<child<<endl;
+
+			if( child != NULL ){			
+
+				if( child->getLeft() == NULL 
+					&& child->getRight() == NULL){
+					deleteZeroChild( root, child, parent );
+				}else if( ( child->getLeft() == NULL && 
+					 child->getRight() != NULL) || 
+				       ( child->getLeft() != NULL && 
+					child->getRight() == NULL) ) {
+					deleteOneChild( root, child, parent );
+		
+				}else{
+					deleteTwoChildChild( root, child );
+				}
+			}else{
+				cout<<"Data not found"<<endl;
+			}
+		return root;
+		}
+		*/
+		
+};	
+
+int main(){
+	BST bst;
+	while(1){
+		char cmd[3];
+		cin>>cmd;
+		if( strcmp(cmd, "in") == 0 ){
+			int n;
+			cin>>n;
+			bst.insert(n);
+		}
+
+		if( strcmp(cmd, "io") == 0  ){
+			bst.inorder();
+		}
+
+		if( strcmp(cmd, "ex") == 0 ){
+			break;
+		}
+		if( strcmp(cmd, "df") == 0 ){
+			bst.traversalD();
+		}
+		if( strcmp(cmd, "bf") == 0 ){
+			bst.traversalB();
+		}
+		if( strcmp(cmd, "dl") == 0 ){
+			int n;
+			cin>>n;
+			bst.deleteNode( n );
+		}	
+		
+	}
+return 0;
+}
